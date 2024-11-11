@@ -1,10 +1,4 @@
-### OTP Provider
-**user:** 
-boizphotos13@gmail.com
-
-**pass:** 
-vxfn zbyk ehjm qtdw
-
+## UNAUTHORIZED LOGIN ACCESS SYSTEM ALERT
 ### Features
 * `sendUnauthorizedReport`: This function creates a detailed email report of the unauthorized attempt and sends it to the administrator.
 
