@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<style>
+    /* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+/* Dashboard container */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: #4a90e2;
+    color: #fff;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+/* Main content area */
+.content {
+    padding: 2rem;
+    flex-grow: 1;
+}
+
+.welcome {
+    margin-bottom: 2rem;
+}
+
+.welcome h2 {
+    font-size: 2rem;
+    color: #4a90e2;
+}
+
+.cards {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    width: calc(33.333% - 1rem);
+    min-width: 250px;
+    text-align: center;
+}
+
+.card h3 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.card p {
+    color: #666;
+}
+
+</style>
+
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <h1 class="logo">Welcome to Your Dashboard</h1>
+            <ul class="nav-links">
+                <li><a href="#profile">Profile</a></li>
+                <li><a href="#settings">Settings</a></li>
+                <li><a href="#logout" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+        
+        <main class="content">
+            <section class="welcome">
+                <h2>Welcome Back!</h2>
+                <p>Explore your dashboard for updates and settings.</p>
+            </section>
+
+            <section class="cards">
+                <div class="card">
+                    <h3>Profile Overview</h3>
+                    <p>Manage your personal information and preferences.</p>
+                </div>
+                <div class="card">
+                    <h3>Account Settings</h3>
+                    <p>Update your account settings and privacy options.</p>
+                </div>
+                <div class="card">
+                    <h3>Support</h3>
+                    <p>Contact our support team for assistance.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function logout() {
+            alert("You have been logged out.");
+            window.location.href = "/";
+        }
+    </script>
+</body>
+</html>

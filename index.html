@@ -1,0 +1,217 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication System</title>
+    <link rel="icon" type="image/png" href="otp.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div id="loginForm">
+            <h2 style="margin-bottom: 1.5rem;">Login</h2>
+            <div class="alert alert-success" id="successAlert"></div>
+            <div class="alert alert-error" id="errorAlert"></div>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div class="toggle-form" onclick="toggleForms()">Need an account? Register</div>
+        </div>
+
+        <div id="registerForm" style="display: none;">
+            <h2 style="margin-bottom: 1.5rem;">Register</h2>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+            <div class="toggle-form" onclick="toggleForms()">Already have an account? Login</div>
+        </div>
+
+        <div id="otpForm">
+            <h2 style="margin-bottom: 1.5rem;">Enter OTP</h2>
+            <div class="form-group">
+                <label for="otp">Enter OTP sent to your email</label>
+                <input type="text" id="otp" maxlength="6" required>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="rememberDevice">
+                    <span class="checkmark"></span>
+                    Remember this device
+                </label>
+            </div>
+            <button onclick="verifyOTP()">Verify OTP</button>
+            <div id="otpTimer" style="text-align: center; margin-top: 1rem;"></div>
+        </div>
+
+
+    </div>
+
+    <script>
+        let timeLeft = 300; // 5 minutes in seconds
+        let timerId = null;
+        const API_URL = 'http://localhost:3000/api';
+
+        function showAlert(message, type) {
+            const alert = document.getElementById(type === 'success' ? 'successAlert' : 'errorAlert');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function toggleForms() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const otpForm = document.getElementById('otpForm');
+
+            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+            registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
+            otpForm.style.display = 'none';
+        }
+
+        function startOTPTimer() {
+            timeLeft = 300;
+            if (timerId) clearInterval(timerId);
+
+            const timerDisplay = document.getElementById('otpTimer');
+            timerId = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `Time remaining: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    document.getElementById('otpForm').style.display = 'none';
+                    document.getElementById('loginForm').style.display = 'block';
+                    showAlert('OTP expired. Please try again.', 'error');
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function showOTPForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('otpForm').style.display = 'block';
+            startOTPTimer();
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const deviceInfo = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password, deviceInfo })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('OTP sent to your email', 'success');
+                    showOTPForm();
+                    // Store email for OTP verification
+                    sessionStorage.setItem('userEmail', email);
+                } else {
+                    showAlert(data.error || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Login failed. Please try again.', 'error');
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Registration successful! Please login.', 'success');
+                    toggleForms();
+                } else {
+                    showAlert(data.error || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showAlert('Registration failed. Please try again.', 'error');
+            }
+        }
+
+        async function verifyOTP() {
+            const otp = document.getElementById('otp').value;
+            const email = sessionStorage.getItem('userEmail');
+
+            try {
+                const response = await fetch(`${API_URL}/verify-otp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, otp })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('Login successful!', 'success');
+                    clearInterval(timerId);
+                    // Clear sensitive data
+                    sessionStorage.removeItem('userEmail');
+                    setTimeout(() => {
+                        // Redirect to dashboard or home page
+                        window.location.href = '/dashboard.html';
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Invalid OTP', 'error');
+                }
+            } catch (error) {
+                showAlert('Verification failed. Please try again.', 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>
