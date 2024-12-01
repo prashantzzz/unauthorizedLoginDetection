@@ -4,11 +4,14 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const axios = require('axios');
+const os = require('os');
 const app = express();
 const port = 3000;
+const path = require('path');
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname)));
 
 // In-memory storage (replace with actual database in production)
 const users = new Map();
@@ -220,7 +223,28 @@ app.get('/api/devices', (req, res) => {
     res.json(Object.fromEntries(authorizedDevices));
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+// Route to serve index.html at the root URL
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Function to retrieve the local IP addresses
+function getLocalIPAddress() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return '127.0.0.1'; // Default to localhost if no other address found
+}
+
+// Start the server on all network interfaces
+const localIP = getLocalIPAddress();
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://${localIP}:${port} on your local network`);
+    console.log(`Server running at http://localhost:${port} on this device`);
+    console.log("Make sure your firewall is configured to allow traffic on this port.");
 });
